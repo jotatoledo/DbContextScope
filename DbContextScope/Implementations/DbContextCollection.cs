@@ -5,8 +5,12 @@
  * This software may be modified and distributed under the terms
  * of the MIT license.  See the LICENSE file for details.
  */
+#if NETSTANDARD2_0
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+#elif (NET45 || NET46)
+using System.Data.Entity;
+#endif
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -29,7 +33,11 @@ namespace EntityFrameworkCore.DbContextScope {
     /// </summary>
     public class DbContextCollection : IDbContextCollection {
         private Dictionary<Type, DbContext> _initializedDbContexts;
+#if NETSTANDARD2_0
         private Dictionary<DbContext, IDbContextTransaction> _transactions;
+#elif (NET45 || NET46)
+        private Dictionary<DbContext, DbContextTransaction> _transactions;
+#endif
         private IsolationLevel? _isolationLevel;
         private readonly IDbContextFactory _dbContextFactory;
         private bool _disposed;
@@ -43,7 +51,11 @@ namespace EntityFrameworkCore.DbContextScope {
             _completed = false;
 
             _initializedDbContexts = new Dictionary<Type, DbContext>();
+            #if NETSTANDARD2_0
             _transactions = new Dictionary<DbContext, IDbContextTransaction>();
+            #elif (NET45 || NET46)
+            _transactions = new Dictionary<DbContext, DbContextTransaction>();
+            #endif
 
             _readOnly = readOnly;
             _isolationLevel = isolationLevel;
@@ -66,7 +78,11 @@ namespace EntityFrameworkCore.DbContextScope {
                 _initializedDbContexts.Add(requestedType, dbContext);
 
                 if (_readOnly) {
+#if NETSTANDARD2_0
                     dbContext.ChangeTracker.AutoDetectChangesEnabled = false;
+#elif (NET45 || NET46)
+                    dbContext.Configuration.AutoDetectChangesEnabled = false;
+#endif
                 }
 
                 if (_isolationLevel.HasValue) {
