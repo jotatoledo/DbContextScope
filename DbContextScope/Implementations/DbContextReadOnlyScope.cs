@@ -1,17 +1,16 @@
-﻿/* 
- * Copyright (C) 2014 Mehdi El Gueddari
- * http://mehdi.me
- *
- * This software may be modified and distributed under the terms
- * of the MIT license.  See the LICENSE file for details.
- */
-using System.Data;
+﻿// Copyright © Mehdi El Gueddari, José Toledo Navarro.
+//
+// This software may be modified and
+// distributed under the terms of the MIT license.
+// See the LICENSE file for details.
 
-namespace EntityFrameworkCore.DbContextScope {
-    public class DbContextReadOnlyScope : IDbContextReadOnlyScope {
-        private DbContextScope _internalScope;
+namespace EntityFrameworkCore.DbContextScope
+{
+    using System.Data;
 
-        public IDbContextCollection DbContexts { get { return _internalScope.DbContexts; } }
+    public class DbContextReadOnlyScope : IDbContextReadOnlyScope
+    {
+        private readonly DbContextScope internalScope;
 
         public DbContextReadOnlyScope(IDbContextFactory dbContextFactory = null)
             : this(joiningOption: DbContextScopeOption.JoinExisting, isolationLevel: null, dbContextFactory: dbContextFactory) { }
@@ -19,12 +18,16 @@ namespace EntityFrameworkCore.DbContextScope {
         public DbContextReadOnlyScope(IsolationLevel isolationLevel, IDbContextFactory dbContextFactory = null)
             : this(joiningOption: DbContextScopeOption.ForceCreateNew, isolationLevel: isolationLevel, dbContextFactory: dbContextFactory) { }
 
-        public DbContextReadOnlyScope(DbContextScopeOption joiningOption, IsolationLevel? isolationLevel, IDbContextFactory dbContextFactory = null) {
-            _internalScope = new DbContextScope(joiningOption: joiningOption, readOnly: true, isolationLevel: isolationLevel, dbContextFactory: dbContextFactory);
+        public DbContextReadOnlyScope(DbContextScopeOption joiningOption, IsolationLevel? isolationLevel, IDbContextFactory dbContextFactory = null)
+        {
+            this.internalScope = new DbContextScope(joiningOption: joiningOption, readOnly: true, isolationLevel: isolationLevel, dbContextFactory: dbContextFactory);
         }
 
-        public void Dispose() {
-            _internalScope.Dispose();
+        public IDbContextCollection DbContexts => this.internalScope.DbContexts;
+
+        public void Dispose()
+        {
+            this.internalScope.Dispose();
         }
     }
 }

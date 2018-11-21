@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/DotNetAnalyzers/StyleCopAnalyzers/master/StyleCop.Analyzers/StyleCop.Analyzers/Settings/stylecop.schema.json",
+  "settings": {
+    "documentationRules": {
+      "xmlHeader": false,
+      "headerDecoration": "-----------------------------------------------------------------------",
+      "companyName": "Mehdi El Gueddari, José Toledo Navarro",
+      "copyrightText": "Copyright © {companyName}.\n\nThis software may be modified and\ndistributed under the terms of the MIT license.\nSee the LICENSE file for details."
+    }
+  }
+}

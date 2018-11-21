@@ -140,11 +140,11 @@ public void MarkGroupOfUsersAsPremium(IEnumerable<Guid> userIds)
     {
         foreach (var userId in userIds)
         {
-        	// The child scope created by MarkUserAsPremium() will
+            // The child scope created by MarkUserAsPremium() will
             // join our scope. So it will re-use our DbContext instance(s)
             // and the call to SaveChanges() made in the child scope will
             // have no effect.
-        	MarkUserAsPremium(userId);
+            MarkUserAsPremium(userId);
         }
         
         // Changes will only be saved here, in the top-level scope,
@@ -233,7 +233,7 @@ public void RandomServiceMethod()
             [...]
         }
 
-		// The ambient context is available again here.
+        // The ambient context is available again here.
         // Can keep doing more work as usual.
         [...]
 
@@ -264,7 +264,7 @@ public void RandomServiceMethod()
         // re-use the DbContext instances that the parent scope uses.
         [...]
         
-		// Since we've forced the creation of a new scope,
+        // Since we've forced the creation of a new scope,
         // this call to SaveChanges() will persist
         // our changes regardless of whether or not the
         // parent scope (if any) saves its changes or rolls back.
@@ -297,8 +297,8 @@ The `DbContextScope` class has a handy helper method that makes this fairly pain
 ```C#
 public void RandomServiceMethod(Guid accountId)
 {
-	// Forcing the creation of a new scope (i.e. we'll be using our 
-	// own DbContext instances)
+    // Forcing the creation of a new scope (i.e. we'll be using our 
+    // own DbContext instances)
     using (var dbContextScope = _dbContextScopeFactory.Create(DbContextScopeOption.ForceCreateNew))
     {
         var account = _accountRepository.Get(accountId);

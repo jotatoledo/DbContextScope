@@ -1,34 +1,36 @@
-﻿/* 
- * Copyright (C) 2014 Mehdi El Gueddari
- * http://mehdi.me
- *
- * This software may be modified and distributed under the terms
- * of the MIT license.  See the LICENSE file for details.
- */
-using System;
+﻿// Copyright © Mehdi El Gueddari, José Toledo Navarro.
+//
+// This software may be modified and
+// distributed under the terms of the MIT license.
+// See the LICENSE file for details.
 
-namespace EntityFrameworkCore.DbContextScope {
-    public class AmbientContextSuppressor : IDisposable {
-        private DbContextScope _savedScope;
-        private bool _disposed;
+namespace EntityFrameworkCore.DbContextScope
+{
+    using System;
 
-        public AmbientContextSuppressor() {
-            _savedScope = DbContextScope.GetAmbientScope();
+    public class AmbientContextSuppressor : IDisposable
+    {
+        private DbContextScope savedScope;
+        private bool disposed;
+
+        public AmbientContextSuppressor()
+        {
+            this.savedScope = DbContextScope.GetAmbientScope();
 
             // We're hiding the ambient scope but not removing its instance
-            // altogether. This is to be tolerant to some programming errors. 
-            // 
+            // altogether. This is to be tolerant to some programming errors.
+            //
             // Suppose we removed the ambient scope instance here. If someone
             // was to start a parallel task without suppressing
             // the ambient context and then tried to suppress the ambient
             // context within the parallel task while the original flow
             // of execution was still ongoing (a strange thing to do, I know,
-            // but I'm sure this is going to happen), we would end up 
-            // removing the ambient context instance of the original flow 
+            // but I'm sure this is going to happen), we would end up
+            // removing the ambient context instance of the original flow
             // of execution from within the parallel flow of execution!
-            // 
+            //
             // As a result, any code in the original flow of execution
-            // that would attempt to access the ambient scope would end up 
+            // that would attempt to access the ambient scope would end up
             // with a null value since we removed the instance.
             //
             // It would be a fairly nasty bug to track down. So don't let
@@ -38,16 +40,20 @@ namespace EntityFrameworkCore.DbContextScope {
             DbContextScope.HideAmbientScope();
         }
 
-        public void Dispose() {
-            if (_disposed)
+        public void Dispose()
+        {
+            if (this.disposed)
+            {
                 return;
-
-            if (_savedScope != null) {
-                DbContextScope.SetAmbientScope(_savedScope);
-                _savedScope = null;
             }
 
-            _disposed = true;
+            if (this.savedScope != null)
+            {
+                DbContextScope.SetAmbientScope(this.savedScope);
+                this.savedScope = null;
+            }
+
+            this.disposed = true;
         }
     }
 }
