@@ -5,8 +5,12 @@
  * This software may be modified and distributed under the terms
  * of the MIT license.  See the LICENSE file for details.
  */
+#if NETSTANDARD2_0
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+#elif (NET45 || NET46)
+using System.Data.Entity;
+#endif
 using System;
 using System.Collections;
 using System.Data;
@@ -136,43 +140,27 @@ namespace EntityFrameworkCore.DbContextScope {
 
             foreach (var contextInCurrentScope in _dbContexts.InitializedDbContexts.Values) {
                 var correspondingParentContext =
-                    _parentScope._dbContexts.InitializedDbContexts.Values.SingleOrDefault(parentContext => parentContext.GetType() == contextInCurrentScope.GetType())
+                    _parentScope._dbContexts
+                    .InitializedDbContexts
+                    .Values
+                    .SingleOrDefault(parentContext => parentContext.GetType() == contextInCurrentScope.GetType())
                     as DbContext;
 
                 if (correspondingParentContext == null)
                     continue; // No DbContext of this type has been created in the parent scope yet. So no need to refresh anything for this DbContext type.
 
+                var refreshStrategy = new EntityRefresh(contextInCurrentScope, correspondingParentContext);
                 // Both our scope and the parent scope have an instance of the same DbContext type. 
                 // We can now look in the parent DbContext instance for entities that need to
                 // be refreshed.
-                foreach (var toRefresh in entities) {
-                    // First, we need to find what the EntityKey for this entity is. 
-                    // We need this EntityKey in order to check if this entity has
-                    // already been loaded in the parent DbContext's first-level cache (the ObjectStateManager).
-                    var stateInCurrentScope = contextInCurrentScope.ChangeTracker.GetInfrastructure().TryGetEntry(toRefresh);
-                    if (stateInCurrentScope != null) {
-                        // NOTE(tim): Thanks to ninety7 (https://github.com/ninety7/DbContextScope) and apawsey (https://github.com/apawsey/DbContextScope)
-                        // for examples on how identify the matching entities in EF Core.
-                        var entityType = stateInCurrentScope.Entity.GetType();
-                        var key = stateInCurrentScope.EntityType.FindPrimaryKey();
-                        var keyValues = key.Properties
-                            .Select(s => entityType.GetProperty(s.Name).GetValue(stateInCurrentScope.Entity))
-                            .ToArray();
-
-                        // Now we can see if that entity exists in the parent DbContext instance and refresh it.
-                        var stateInParentScope = correspondingParentContext.ChangeTracker.GetInfrastructure().TryGetEntry(key, keyValues);
-                        if (stateInParentScope != null) {
-                            // Only refresh the entity in the parent DbContext from the database if that entity hasn't already been
-                            // modified in the parent. Otherwise, let the whatever concurency rules the application uses
-                            // apply.
-                            if (stateInParentScope.EntityState == EntityState.Unchanged) {
-                                correspondingParentContext.Entry(stateInParentScope.Entity).Reload();
-                            }
-                        }
-                    }
+                foreach (var toRefresh in entities)
+                {
+                    refreshStrategy.Refresh(toRefresh);
                 }
             }
         }
+
+        
 
         public async Task RefreshEntitiesInParentScopeAsync(IEnumerable entities) {
             // See comments in the sync version of this method for an explanation of what we're doing here.
@@ -194,22 +182,9 @@ namespace EntityFrameworkCore.DbContextScope {
                 if (correspondingParentContext == null)
                     continue;
 
+                var refreshStrategy = new EntityRefresh(contextInCurrentScope, correspondingParentContext);
                 foreach (var toRefresh in entities) {
-                    var stateInCurrentScope = contextInCurrentScope.ChangeTracker.GetInfrastructure().TryGetEntry(toRefresh);
-                    if (stateInCurrentScope != null) {
-                        var entityType = stateInCurrentScope.Entity.GetType();
-                        var key = stateInCurrentScope.EntityType.FindPrimaryKey();
-                        var keyValues = key.Properties
-                            .Select(s => entityType.GetProperty(s.Name).GetValue(stateInCurrentScope.Entity))
-                            .ToArray();
-
-                        var stateInParentScope = correspondingParentContext.ChangeTracker.GetInfrastructure().TryGetEntry(key, keyValues);
-                        if (stateInParentScope != null) {
-                            if (stateInParentScope.EntityState == EntityState.Unchanged) {
-                                await correspondingParentContext.Entry(stateInParentScope.Entity).ReloadAsync().ConfigureAwait(false);
-                            }
-                        }
-                    }
+                    refreshStrategy.Refresh(toRefresh);
                 }
             }
         }
