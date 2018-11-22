@@ -4,7 +4,7 @@
 // distributed under the terms of the MIT license.
 // See the LICENSE file for details.
 
-namespace EntityFrameworkCore.DbContextScope
+namespace EntityFrameworkCore.DbContextScope.Internal
 {
     using System.Linq;
 #if NETSTANDARD2_0
@@ -16,7 +16,7 @@ namespace EntityFrameworkCore.DbContextScope
     using System.Data.Entity.Infrastructure;
 #endif
 
-    internal sealed class EntityRefresh : IEntityRefresh
+    internal sealed class EntityRefresh
     {
         private readonly DbContext contextInCurrentScope;
         private readonly DbContext correspondingParentContext;

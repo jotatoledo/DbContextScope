@@ -7,9 +7,9 @@
 namespace EntityFrameworkCore.DbContextScope
 {
 #if NETSTANDARD2_0
-using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore;
 #elif NET45 || NET46
-using System.Data.Entity;
+    using System.Data.Entity;
 #endif
     using System;
     using System.Collections;
@@ -18,6 +18,7 @@ using System.Data.Entity;
     using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
+    using EntityFrameworkCore.DbContextScope.Internal;
 
     public class DbContextScope : IDbContextScope
     {

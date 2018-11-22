@@ -4,7 +4,7 @@
 // distributed under the terms of the MIT license.
 // See the LICENSE file for details.
 
-namespace EntityFrameworkCore.DbContextScope
+namespace EntityFrameworkCore.DbContextScope.Internal
 {
 #if NETSTANDARD2_0
     using Microsoft.EntityFrameworkCore;
@@ -31,7 +31,7 @@ namespace EntityFrameworkCore.DbContextScope
     /// instances it created when its Commit() or Rollback() method is called.
     ///
     /// </summary>
-    public class DbContextCollection : IDbContextCollection
+    internal class DbContextCollection : IDbContextCollection
     {
         private readonly bool readOnly;
         private readonly Dictionary<Type, DbContext> initializedDbContexts;

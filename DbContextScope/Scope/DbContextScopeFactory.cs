@@ -8,6 +8,7 @@ namespace EntityFrameworkCore.DbContextScope
 {
     using System;
     using System.Data;
+    using EntityFrameworkCore.DbContextScope.Internal;
 
     /// <summary>
     /// Basic implementation of <see cref="IDbContextScopeFactory"/>

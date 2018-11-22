@@ -4,11 +4,11 @@
 // distributed under the terms of the MIT license.
 // See the LICENSE file for details.
 
-namespace EntityFrameworkCore.DbContextScope
+namespace EntityFrameworkCore.DbContextScope.Internal
 {
     using System;
 
-    public class AmbientContextSuppressor : IDisposable
+    internal sealed class AmbientContextSuppressor : IDisposable
     {
         private DbContextScope savedScope;
         private bool disposed;

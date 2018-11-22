@@ -7,22 +7,21 @@
 namespace EntityFrameworkCore.DbContextScope
 {
 #if NETSTANDARD2_0
-using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore;
 #elif NET45 || NET46
     using System.Data.Entity;
 #endif
+    using System;
 
     /// <summary>
-    /// Convenience methods to retrieve ambient DbContext instances.
+    /// Maintains a list of lazily-created <see cref="DbContext"/> instances.
     /// </summary>
-    public interface IAmbientDbContextLocator
+    public interface IDbContextCollection : IDisposable
     {
         /// <summary>
-        /// If called within the scope of a DbContextScope, gets or creates
-        /// the ambient DbContext instance for the provided DbContext type.
-        /// Otherwise returns null.
+        /// Get or create a DbContext instance of the specified type.
         /// </summary>
-        /// <typeparam name="TDbContext">The context concrete type</typeparam>
+        /// <typeparam name="TDbContext">The context type</typeparam>
         /// <returns>A context instance</returns>
         TDbContext Get<TDbContext>()
             where TDbContext : DbContext;
