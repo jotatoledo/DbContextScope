@@ -1,10 +1,18 @@
-﻿using System;
+﻿// Copyright © Mehdi El Gueddari, José Toledo Navarro.
+//
+// This software may be modified and
+// distributed under the terms of the MIT license.
+// See the LICENSE file for details.
 
-namespace Numero3.EntityFramework.Demo.CommandModel {
+namespace Numero3.EntityFramework.Demo.CommandModel
+{
+    using System;
+
     /// <summary>
     /// Specifications of the CreateUser command. Defines the properties of a new user.
     /// </summary>
-    public class UserCreationSpec {
+    public class UserCreationSpec
+    {
         /// <summary>
         /// The Id automatically generated for this user.
         /// </summary>
@@ -13,13 +21,15 @@ namespace Numero3.EntityFramework.Demo.CommandModel {
         public string Name { get; protected set; }
         public string Email { get; protected set; }
 
-        public UserCreationSpec(string name, string email) {
-            Id = Guid.NewGuid();
-            Name = name;
-            Email = email;
+        public UserCreationSpec(string name, string email)
+        {
+            this.Id = Guid.NewGuid();
+            this.Name = name;
+            this.Email = email;
         }
 
-        public void Validate() {
+        public void Validate()
+        {
             // [...]
         }
     }

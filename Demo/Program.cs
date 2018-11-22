@@ -1,16 +1,25 @@
-﻿using EntityFrameworkCore.DbContextScope;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
-using Numero3.EntityFramework.Demo.BusinessLogicServices;
-using Numero3.EntityFramework.Demo.CommandModel;
-using Numero3.EntityFramework.Demo.DatabaseContext;
-using Numero3.EntityFramework.Demo.Repositories;
-using System;
-using System.Linq;
+﻿// Copyright © Mehdi El Gueddari, José Toledo Navarro.
+//
+// This software may be modified and
+// distributed under the terms of the MIT license.
+// See the LICENSE file for details.
 
-namespace Numero3.EntityFramework.Demo {
-    class Program {
-        static void Main(string[] args) {
+namespace Numero3.EntityFramework.Demo
+{
+    using System;
+    using System.Linq;
+    using EntityFrameworkCore.DbContextScope;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Diagnostics;
+    using Numero3.EntityFramework.Demo.BusinessLogicServices;
+    using Numero3.EntityFramework.Demo.CommandModel;
+    using Numero3.EntityFramework.Demo.DatabaseContext;
+    using Numero3.EntityFramework.Demo.Repositories;
+
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
             //-- Poor-man DI - build our dependencies by hand for this demo
             var dbContextScopeFactory = new DbContextScopeFactory(new DbContextFactory());
             var ambientDbContextLocator = new AmbientDbContextLocator();
@@ -21,9 +30,10 @@ namespace Numero3.EntityFramework.Demo {
             var userEmailService = new UserEmailService(dbContextScopeFactory);
             var userCreditScoreService = new UserCreditScoreService(dbContextScopeFactory);
 
-            try {
+            try
+            {
                 Console.WriteLine("This demo uses an EF Core In Memory database. It does not create any external databases.");
-                Console.WriteLine("");
+                Console.WriteLine(string.Empty);
 
                 //-- Demo of typical usage for read and writes
                 Console.WriteLine("Creating a user called Mary...");
@@ -52,15 +62,18 @@ namespace Numero3.EntityFramework.Demo {
                 Console.WriteLine("Press enter to continue...");
                 Console.ReadLine();
 
-                //-- Demo of nested DbContextScopes in the face of an exception. 
-                // If any of the provided users failed to get persisted, none should get persisted. 
+                //-- Demo of nested DbContextScopes in the face of an exception.
+                // If any of the provided users failed to get persisted, none should get persisted.
                 Console.WriteLine("Creating 2 new users called Julie and Marc in an atomic transaction. Will make the persistence of the second user fail intentionally in order to test the atomicity of the transaction...");
                 var julieSpec = new UserCreationSpec("Julie", "julie@example.com");
                 var marcSpec = new UserCreationSpec("Marc", "marc@example.com");
-                try {
+                try
+                {
                     userCreationService.CreateListOfUsersWithIntentionalFailure(julieSpec, marcSpec);
                     Console.WriteLine("Done.\n");
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     Console.WriteLine(e.Message);
                     Console.WriteLine();
                 }
@@ -74,6 +87,7 @@ namespace Numero3.EntityFramework.Demo {
 
                 //-- Demo of DbContextScope within an async flow
                 Console.WriteLine("Trying to retrieve two users John and Jeanne sequentially in an asynchronous manner...");
+
                 // We're going to block on the async task here as we don't have a choice. No risk of deadlocking in any case as console apps
                 // don't have a synchronization context.
                 var usersFoundAsync = userQueryService.GetTwoUsersAsync(johnSpec.Id, jeanneSpec.Id).Result;
@@ -82,8 +96,9 @@ namespace Numero3.EntityFramework.Demo {
                 Console.WriteLine("Press enter to continue...");
                 Console.ReadLine();
 
-                //-- Demo of explicit database transaction. 
+                //-- Demo of explicit database transaction.
                 Console.WriteLine("Trying to retrieve user John within a READ UNCOMMITTED database transaction...");
+
                 // You'll want to use SQL Profiler or Entity Framework Profiler to verify that the correct transaction isolation
                 // level is being used.
                 var userMaybeUncommitted = userQueryService.GetUserUncommitted(johnSpec.Id);
@@ -96,7 +111,8 @@ namespace Numero3.EntityFramework.Demo {
                 // This is a pretty advanced feature that you can safely ignore until you actually need it.
                 Console.WriteLine("Will simulate sending a Welcome email to John...");
 
-                using (var parentScope = dbContextScopeFactory.Create()) {
+                using (var parentScope = dbContextScopeFactory.Create())
+                {
                     var parentDbContext = parentScope.DbContexts.Get<UserManagementDbContext>();
 
                     // Load John in the parent DbContext
@@ -122,7 +138,9 @@ namespace Numero3.EntityFramework.Demo {
                 Console.WriteLine("Calculating and storing the credit score of all users in the database in parallel...");
                 userCreditScoreService.UpdateCreditScoreForAllUsers();
                 Console.WriteLine("Done.");
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 Console.WriteLine(e);
             }
 
@@ -131,20 +149,25 @@ namespace Numero3.EntityFramework.Demo {
             Console.WriteLine("Press enter to exit...");
             Console.ReadLine();
         }
-    }
 
-    class DbContextFactory : IDbContextFactory {
-        public TDbContext CreateDbContext<TDbContext>() where TDbContext : DbContext {
-            if (typeof(TDbContext) == typeof(UserManagementDbContext)) {
-                var config = new DbContextOptionsBuilder<UserManagementDbContext>()
-                    .UseInMemoryDatabase()
-                    .ConfigureWarnings(warnings => {
-                        warnings.Ignore(InMemoryEventId.TransactionIgnoredWarning);
-                    });
-                return new UserManagementDbContext(config.Options) as TDbContext;
+        internal class DbContextFactory : IDbContextFactory
+        {
+            public TDbContext CreateDbContext<TDbContext>()
+                where TDbContext : DbContext
+            {
+                if (typeof(TDbContext) == typeof(UserManagementDbContext))
+                {
+                    var config = new DbContextOptionsBuilder<UserManagementDbContext>()
+                        .UseInMemoryDatabase(string.Empty)
+                        .ConfigureWarnings(warnings =>
+                        {
+                            warnings.Ignore(InMemoryEventId.TransactionIgnoredWarning);
+                        });
+                    return new UserManagementDbContext(config.Options) as TDbContext;
+                }
+
+                throw new NotImplementedException(typeof(TDbContext).Name);
             }
-
-            throw new NotImplementedException(typeof(TDbContext).Name);
         }
     }
 }
